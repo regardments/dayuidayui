@@ -1156,14 +1156,16 @@ function SimpleKavo.CreateLib(title, themeName)
 	ResizeHandleGrad.Rotation = 90
 	ResizeHandleGrad.Parent = ResizeHandle
 
+	local BASE_W = 500
+	local BASE_H = 370
 	local resizing = false
-	local resizeStartPos = nil
-	local resizeStartSize = nil
+	local rStartPos = nil
+	local rStartScale = nil
 
 	ResizeHandle.MouseButton1Down:Connect(function()
 		resizing = true
-		resizeStartPos = UserInputService:GetMouseLocation()
-		resizeStartSize = Main.Size
+		rStartPos = UserInputService:GetMouseLocation()
+		rStartScale = MainScale.Scale
 	end)
 
 	UserInputService.InputEnded:Connect(function(inp)
@@ -1175,10 +1177,16 @@ function SimpleKavo.CreateLib(title, themeName)
 	UserInputService.InputChanged:Connect(function(inp)
 		if not resizing then return end
 		if inp.UserInputType ~= Enum.UserInputType.MouseMovement then return end
-		local delta = inp.Position - resizeStartPos
-		local newW = math.max(300, resizeStartSize.X.Offset + delta.X)
-		local newH = math.max(200, resizeStartSize.Y.Offset + delta.Y)
-		Main.Size = UDim2.new(0, newW, 0, newH)
+		local ok, pos = pcall(function() return inp.Position end)
+		if not ok or not pos or not rStartPos or not rStartScale then
+			resizing = false
+			return
+		end
+		local delta = pos - rStartPos
+		local scaleX = (BASE_W + delta.X) / BASE_W
+		local scaleY = (BASE_H + delta.Y) / BASE_H
+		local newScale = math.max(0.5, math.min(scaleX, scaleY))
+		MainScale.Scale = newScale
 	end)
 
 	ResizeHandle.MouseEnter:Connect(function()
@@ -1519,8 +1527,8 @@ function SimpleKavo.CreateLib(title, themeName)
 	SimpleKavo:DraggingEnabled(Header, Main)
 
 	task.spawn(function()
-		Main.Size = UDim2.fromOffset(500, 30)
-		Tween(Main, { Size = UDim2.new(0, 500, 0, 370) }, 0.5, 2)
+		MainScale.Scale = 0.3
+		Tween(MainScale, { Scale = 1 }, 0.4, 5)
 		HeaderFade.BackgroundTransparency = 0
 		HeaderFade.Visible = true
 		Tween(HeaderFade, { BackgroundTransparency = 1 }, 2, 2).Completed:Wait()
