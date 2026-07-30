@@ -969,6 +969,82 @@ function SimpleKavo.CreateLib(title, themeName)
 		end
 	end
 
+	local NotificationHolder = Instance.new("Frame")
+	NotificationHolder.Name = "NotificationHolder"
+	NotificationHolder.BackgroundTransparency = 1
+	NotificationHolder.BorderSizePixel = 0
+	NotificationHolder.Position = UDim2.new(1, -290, 0, 5)
+	NotificationHolder.Size = UDim2.new(0, 280, 1, -10)
+	NotificationHolder.ZIndex = 800
+	NotificationHolder.Parent = ScreenGui
+
+	local NotifListLayout = Instance.new("UIListLayout")
+	NotifListLayout.Padding = UDim.new(0, 4)
+	NotifListLayout.VerticalAlignment = Enum.VerticalAlignment.Top
+	NotifListLayout.Parent = NotificationHolder
+
+	local function notify(title, desc, duration)
+		duration = duration or 4
+		local notif = Instance.new("Frame")
+		notif.BackgroundColor3 = Color3.fromRGB(25, 25, 30)
+		notif.BackgroundTransparency = 1
+		notif.BorderSizePixel = 0
+		notif.Size = UDim2.new(1, 0, 0, 0)
+		notif.ZIndex = 801
+		notif.ClipsDescendants = true
+		notif.Parent = NotificationHolder
+
+		local notifCorner = Instance.new("UICorner")
+		notifCorner.CornerRadius = UDim.new(0, 4)
+		notifCorner.Parent = notif
+
+		local notifStroke = Instance.new("UIStroke")
+		notifStroke.Color = Color3.fromRGB(45, 45, 55)
+		notifStroke.Thickness = 1
+		notifStroke.Parent = notif
+
+		local titleLbl = Instance.new("TextLabel")
+		titleLbl.BackgroundTransparency = 1
+		titleLbl.BorderSizePixel = 0
+		titleLbl.Font = Enum.Font.SourceSansBold
+		titleLbl.Text = title
+		titleLbl.TextColor3 = Color3.fromRGB(255, 255, 255)
+		titleLbl.TextSize = 15
+		titleLbl.TextXAlignment = Enum.TextXAlignment.Left
+		titleLbl.Position = UDim2.fromOffset(10, 8)
+		titleLbl.Size = UDim2.new(1, -20, 0, 18)
+		titleLbl.ZIndex = 802
+		titleLbl.Parent = notif
+
+		local descLbl = Instance.new("TextLabel")
+		descLbl.BackgroundTransparency = 1
+		descLbl.BorderSizePixel = 0
+		descLbl.Font = Enum.Font.SourceSans
+		descLbl.Text = desc
+		descLbl.TextColor3 = Color3.fromRGB(180, 180, 180)
+		descLbl.TextSize = 13
+		descLbl.TextWrapped = true
+		descLbl.TextXAlignment = Enum.TextXAlignment.Left
+		descLbl.TextYAlignment = Enum.TextYAlignment.Top
+		descLbl.Position = UDim2.fromOffset(10, 28)
+		descLbl.Size = UDim2.new(1, -20, 0, 0)
+		descLbl.ZIndex = 802
+		descLbl.Parent = notif
+
+		local descH = descLbl.TextBounds.Y + 4
+		descLbl.Size = UDim2.new(1, -20, 0, math.max(16, descH))
+		local totalH = 34 + math.max(16, descH)
+		notif.Size = UDim2.new(1, 0, 0, totalH)
+
+		Tween(notif, { BackgroundTransparency = 0 }, 0.2, 3)
+		task.delay(duration, function()
+			if not notif.Parent then return end
+			Tween(notif, { BackgroundTransparency = 1 }, 0.3, 3)
+			task.wait(0.3)
+			if notif.Parent then notif:Destroy() end
+		end)
+	end
+
 	local function ConfirmPrompt(text, callback)
 		local overlay = Instance.new("Frame")
 		overlay.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
@@ -1161,7 +1237,7 @@ function SimpleKavo.CreateLib(title, themeName)
 	Title.Parent = Header
 	Title.BackgroundTransparency = 1
 	Title.Position = UDim2.fromOffset(28, 0)
-	Title.Size = UDim2.new(1, -120, 1, 0)
+	Title.Size = UDim2.new(1, -220, 1, 0)
 	Title.Font = Enum.Font.RobotoCondensed
 	Title.Text = title
 	Title.TextColor3 = T.TextPrimary
@@ -1175,6 +1251,94 @@ function SimpleKavo.CreateLib(title, themeName)
 	local TitlePad = Instance.new("UIPadding")
 	TitlePad.PaddingLeft = UDim.new(0, 4)
 	TitlePad.Parent = Title
+
+	local SearchIcon = Instance.new("ImageLabel")
+	SearchIcon.BackgroundTransparency = 1
+	SearchIcon.BorderSizePixel = 0
+	SearchIcon.Image = "rbxassetid://10709319175"
+	SearchIcon.ImageColor3 = T.TextDim
+	SearchIcon.AnchorPoint = Vector2.new(1, 0.5)
+	SearchIcon.Position = UDim2.new(1, -112, 0.5, 0)
+	SearchIcon.Size = UDim2.fromOffset(12, 12)
+	SearchIcon.ZIndex = 52
+	SearchIcon.Parent = Header
+
+	local SearchBox = Instance.new("TextBox")
+	SearchBox.Name = "SearchBox"
+	SearchBox.Parent = Header
+	SearchBox.BackgroundColor3 = T.Window3
+	SearchBox.BackgroundTransparency = 0.5
+	SearchBox.BorderSizePixel = 0
+	SearchBox.AnchorPoint = Vector2.new(1, 0.5)
+	SearchBox.Position = UDim2.new(1, -24, 0.5, 0)
+	SearchBox.Size = UDim2.new(0, 0, 0, 16)
+	SearchBox.Font = Enum.Font.SourceSans
+	SearchBox.PlaceholderText = ""
+	SearchBox.PlaceholderColor3 = T.TextDim
+	SearchBox.Text = ""
+	SearchBox.TextColor3 = T.TextPrimary
+	SearchBox.TextSize = 13
+	SearchBox.ClearTextOnFocus = false
+	SearchBox.ZIndex = 52
+	SearchBox.ClipsDescendants = true
+
+	local SearchBoxCorner = Instance.new("UICorner")
+	SearchBoxCorner.CornerRadius = UDim.new(0, 2)
+	SearchBoxCorner.Parent = SearchBox
+
+	local searchOpen = false
+	SearchIcon.MouseEnter:Connect(function()
+		if not searchOpen then Tween(SearchIcon, { ImageColor3 = T.Primary }, 0.2, 2) end
+	end)
+	SearchIcon.MouseLeave:Connect(function()
+		if not searchOpen then Tween(SearchIcon, { ImageColor3 = T.TextDim }, 0.2, 2) end
+	end)
+	SearchIcon.MouseButton1Click:Connect(function()
+		searchOpen = not searchOpen
+		if searchOpen then
+			Tween(SearchIcon, { ImageColor3 = T.Primary }, 0.2, 2)
+			Tween(SearchBox, { Size = UDim2.new(0, 76, 0, 16), BackgroundTransparency = 0 }, 0.2, 2)
+			Tween(SearchBox, { Position = UDim2.new(1, -106, 0.5, 0) }, 0.2, 2)
+			task.defer(function() SearchBox:CaptureFocus() end)
+		else
+			SearchBox.Text = ""
+			Tween(SearchIcon, { ImageColor3 = T.TextDim }, 0.2, 2)
+			Tween(SearchBox, { Size = UDim2.new(0, 0, 0, 16), BackgroundTransparency = 0.5 }, 0.2, 2)
+			Tween(SearchBox, { Position = UDim2.new(1, -24, 0.5, 0) }, 0.2, 2)
+		end
+	end)
+
+	local function applySearchFilter(query)
+		query = query:lower():gsub("^%s+", ""):gsub("%s+$", "")
+		for _, sec in ipairs(allSections) do
+			local secContent = sec:FindFirstChild("Content")
+			if not secContent then continue end
+			local anyVisible = false
+			for _, child in ipairs(secContent:GetChildren()) do
+				local match = false
+				if query == "" then
+					match = true
+				else
+					local elementName = child.Name
+					if elementName:match("_Control$") then
+						elementName = elementName:gsub("_Control$", "")
+					end
+					local titleLbl = child:FindFirstChild("Title")
+					if titleLbl and titleLbl:IsA("TextLabel") then
+						elementName = titleLbl.Text
+					end
+					match = elementName:lower():find(query, 1, true) ~= nil
+				end
+				child.Visible = match
+				if match then anyVisible = true end
+			end
+			local titleBar = sec:FindFirstChild("TitleBar")
+			if titleBar then titleBar.Visible = anyVisible end
+			sec.Visible = anyVisible
+		end
+	end
+
+	SearchBox.TextChanged:Connect(applySearchFilter)
 
 	local WindowIcon = Instance.new("ImageLabel")
 	WindowIcon.BackgroundTransparency = 1
@@ -1260,37 +1424,8 @@ function SimpleKavo.CreateLib(title, themeName)
 		Tween(CloseStroke, { Color = T.Stroke }, 0.2, 2)
 	end)
 	Close.MouseButton1Click:Connect(function()
-		local animCon
-		task.spawn(function()
-			local backgroundTransparency = {}
-			local imageTransparency = {}
-			local textTransparency = {}
-			local transparency = {}
-			local s = {
-				Frame = { backgroundTransparency },
-				ImageLabel = { backgroundTransparency, imageTransparency },
-				ImageButton = { backgroundTransparency, imageTransparency },
-				TextLabel = { backgroundTransparency, textTransparency },
-				TextButton = { backgroundTransparency, textTransparency },
-				UIStroke = { transparency },
-			}
-			local d = Main:GetDescendants()
-			table.insert(d, Main)
-			for _, v in ipairs(d) do
-				local a = s[v.ClassName]
-				if a then for i = 1, #a do table.insert(a[i], v) end end
-			end
-			for _, v in ipairs(transparency) do v.Transparency = 1 end
-			animCon = RunService.RenderStepped:Connect(function(dt)
-				dt = dt * 8
-				for _, v in ipairs(backgroundTransparency) do v.BackgroundTransparency = v.BackgroundTransparency + dt end
-				for _, v in ipairs(imageTransparency) do v.ImageTransparency = v.ImageTransparency + dt end
-				for _, v in ipairs(textTransparency) do v.TextTransparency = v.TextTransparency + dt end
-			end)
-		end)
-		Tween(Main, { BackgroundTransparency = 1 }, 0.3, 2):Wait()
-		if animCon then animCon:Disconnect() end
-		ScreenGui:Destroy()
+		Minimized = true
+		Main.Visible = false
 	end)
 
 	KeybindBtn.MouseEnter:Connect(function()
@@ -1470,6 +1605,7 @@ function SimpleKavo.CreateLib(title, themeName)
 
 	local tabsOrder = {}
 	local currentTab = nil
+	local allSections = {}
 
 	local function updateTheme(newThemeName)
 		if not Themes[newThemeName] then
@@ -1483,6 +1619,10 @@ function SimpleKavo.CreateLib(title, themeName)
 		Content.BackgroundColor3 = newT.Window2
 		Title.TextColor3 = newT.TextPrimary
 		WindowIcon.ImageColor3 = newT.Primary
+		SearchIcon.ImageColor3 = searchOpen and newT.Primary or newT.TextDim
+		SearchBox.BackgroundColor3 = newT.Window3
+		SearchBox.PlaceholderColor3 = newT.TextDim
+		SearchBox.TextColor3 = newT.TextPrimary
 		TrimGradient.Color = ColorSequence.new(newT.Primary, newT.Secondary)
 		KeybindBtn.TextColor3 = newT.TextDim
 		KeybindBtn.BackgroundColor3 = newT.Button1
@@ -1596,6 +1736,9 @@ function SimpleKavo.CreateLib(title, themeName)
 			Tween(TabButton, { BackgroundColor3 = T.Button3, TextColor3 = T.Primary }, 0.2, 2)
 			Tween(TabButtonStroke, { Color = T.StrokeHover }, 0.2, 2)
 			currentTab = TabButton
+			if searchOpen then
+				task.defer(function() applySearchFilter(SearchBox.Text) end)
+			end
 		end
 
 		TabButton.MouseEnter:Connect(function()
@@ -1691,6 +1834,7 @@ function SimpleKavo.CreateLib(title, themeName)
 			SectionContent.Size = UDim2.new(1, 0, 0, 0)
 			SectionContent.AutomaticSize = Enum.AutomaticSize.Y
 			SectionContent.ZIndex = 33
+			table.insert(allSections, SectionFrame)
 
 			local SectionList = Instance.new("UIListLayout")
 			SectionList.Parent = SectionContent
@@ -3488,6 +3632,18 @@ function SimpleKavo.CreateLib(title, themeName)
 				return methods
 			end
 
+			function SectionFunctions:NewSeparator()
+				local sep = Instance.new("Frame")
+				sep.BackgroundColor3 = T.Stroke
+				sep.BorderSizePixel = 0
+				sep.Size = UDim2.new(0.95, 0, 0, 1)
+				sep.Position = UDim2.fromOffset(0, 0)
+				sep.ZIndex = 30
+				sep.LayoutOrder = #SectionContent:GetChildren()
+				sep.Parent = SectionContent
+				return sep
+			end
+
 			function SectionFunctions:NewTextBox(tbName, placeholder, callback)
 				local elementOrder = #SectionContent:GetChildren()
 
@@ -3690,6 +3846,7 @@ function SimpleKavo.CreateLib(title, themeName)
 				Main.Visible = true
 			end
 		end,
+		Notify = notify,
 		ChangeTheme = updateTheme,
 	}
 end
