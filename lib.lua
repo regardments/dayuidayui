@@ -1091,11 +1091,6 @@ function SimpleKavo.CreateLib(title, themeName)
 	Main.ClipsDescendants = false
 	Main.ZIndex = 5
 
-	local MainScale = Instance.new("UIScale")
-	MainScale.Scale = 1
-	MainScale.Name = "Scale"
-	MainScale.Parent = Main
-
 	local MainStroke = Instance.new("UIStroke")
 	MainStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
 	MainStroke.Color = T.Stroke
@@ -1133,68 +1128,6 @@ function SimpleKavo.CreateLib(title, themeName)
 	TrimGradient.Enabled = true
 	TrimGradient.Rotation = 0
 	TrimGradient.Parent = TrimLine
-
-	local ResizeHandle = Instance.new("TextButton")
-	ResizeHandle.Name = "ResizeHandle"
-	ResizeHandle.Parent = Main
-	ResizeHandle.BackgroundColor3 = T.Primary
-	ResizeHandle.BorderSizePixel = 0
-	ResizeHandle.Position = UDim2.new(1, -12, 1, -12)
-	ResizeHandle.Size = UDim2.fromOffset(12, 12)
-	ResizeHandle.Text = ""
-	ResizeHandle.ZIndex = 65
-	ResizeHandle.AutoButtonColor = false
-
-	local ResizeHandleStroke = Instance.new("UIStroke")
-	ResizeHandleStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-	ResizeHandleStroke.Color = T.Stroke
-	ResizeHandleStroke.Thickness = 1
-	ResizeHandleStroke.Parent = ResizeHandle
-
-	local ResizeHandleGrad = Instance.new("UIGradient")
-	ResizeHandleGrad.Color = ColorSequence.new(Color3.fromRGB(255, 255, 255), Color3.fromRGB(200, 200, 200))
-	ResizeHandleGrad.Rotation = 90
-	ResizeHandleGrad.Parent = ResizeHandle
-
-	local BASE_W = 500
-	local BASE_H = 370
-	local resizing = false
-	local rStartPos = nil
-	local rStartScale = nil
-
-	ResizeHandle.MouseButton1Down:Connect(function()
-		resizing = true
-		rStartPos = UserInputService:GetMouseLocation()
-		rStartScale = MainScale.Scale
-	end)
-
-	UserInputService.InputEnded:Connect(function(inp)
-		if inp.UserInputType == Enum.UserInputType.MouseButton1 then
-			resizing = false
-		end
-	end)
-
-	UserInputService.InputChanged:Connect(function(inp)
-		if not resizing then return end
-		if inp.UserInputType ~= Enum.UserInputType.MouseMovement then return end
-		local ok, pos = pcall(function() return inp.Position end)
-		if not ok or not pos or not rStartPos or not rStartScale then
-			resizing = false
-			return
-		end
-		local delta = pos - rStartPos
-		local scaleX = (BASE_W + delta.X) / BASE_W
-		local scaleY = (BASE_H + delta.Y) / BASE_H
-		local newScale = math.max(0.5, math.min(scaleX, scaleY))
-		MainScale.Scale = newScale
-	end)
-
-	ResizeHandle.MouseEnter:Connect(function()
-		Tween(ResizeHandle, { BackgroundColor3 = T.Button2 }, 0.2, 2)
-	end)
-	ResizeHandle.MouseLeave:Connect(function()
-		Tween(ResizeHandle, { BackgroundColor3 = T.Primary }, 0.2, 2)
-	end)
 
 	local Header = Instance.new("Frame")
 	Header.Name = "Header"
@@ -1355,7 +1288,7 @@ function SimpleKavo.CreateLib(title, themeName)
 				for _, v in ipairs(textTransparency) do v.TextTransparency = v.TextTransparency + dt end
 			end)
 		end)
-		Tween(MainScale, { Scale = 0.6 }, 0.5, 2).Completed:Wait()
+		Tween(Main, { BackgroundTransparency = 1 }, 0.3, 2):Wait()
 		if animCon then animCon:Disconnect() end
 		ScreenGui:Destroy()
 	end)
@@ -1527,8 +1460,8 @@ function SimpleKavo.CreateLib(title, themeName)
 	SimpleKavo:DraggingEnabled(Header, Main)
 
 	task.spawn(function()
-		MainScale.Scale = 0.3
-		Tween(MainScale, { Scale = 1 }, 0.4, 5)
+		Main.Size = UDim2.fromOffset(500, 30)
+		Tween(Main, { Size = UDim2.new(0, 500, 0, 370) }, 0.5, 2)
 		HeaderFade.BackgroundTransparency = 0
 		HeaderFade.Visible = true
 		Tween(HeaderFade, { BackgroundTransparency = 1 }, 2, 2).Completed:Wait()
