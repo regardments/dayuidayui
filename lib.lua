@@ -1299,7 +1299,7 @@ function SimpleKavo.CreateLib(title, themeName)
 
 	local function ShowNotification(text, duration)
 		duration = duration or 3
-		if notifTask then notifTask:Cancel() end
+		if notifTask then task.cancel(notifTask) end
 		NotifLabel.Text = text
 		local width = math.clamp(#text * 7 + 20, 80, 400)
 		Notification.Size = UDim2.new(0, width, 0, 28)
@@ -1741,7 +1741,7 @@ function SimpleKavo.CreateLib(title, themeName)
 				local confirmTask = nil
 				ClickSensor.MouseButton1Click:Connect(function()
 					if confirmPending then
-						if confirmTask then confirmTask:Cancel() end
+						if confirmTask then task.cancel(confirmTask) end
 						confirmPending = false
 						BtnFrame.BackgroundColor3 = T.Button3
 						Tween(BtnFrame, { BackgroundColor3 = T.Button1 }, 1, 2)
